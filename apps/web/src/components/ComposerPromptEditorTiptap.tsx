@@ -39,6 +39,7 @@ import {
   expandCollapsedComposerCursor,
   isCollapsedCursorAdjacentToInlineToken,
 } from "~/composer-logic";
+import { createComposerDeadKeyInput } from "~/composer-dead-key";
 import {
   collectComposerPromptInlineTokens,
   selectionTouchesMentionBoundary,
@@ -619,6 +620,7 @@ function ComposerPromptEditorTiptapInner(props: ComposerPromptEditorProps) {
   // The editor instance for callbacks created before it exists (paste).
   // Effects flush before any user interaction, so this is always set.
   const editorHolder = useRef<TiptapEditor | null>(null);
+  const deadKeyInput = useRef(createComposerDeadKeyInput());
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -822,6 +824,16 @@ function ComposerPromptEditorTiptapInner(props: ComposerPromptEditorProps) {
       editable: !disabled,
       editorProps: {
         attributes: editorAttributes,
+        handleDOMEvents: {
+          keydown: (_view, event) => {
+            deadKeyInput.current.keyDown(event, performance.now());
+            return false;
+          },
+          blur: () => {
+            deadKeyInput.current.reset();
+            return false;
+          },
+        },
         handleKeyDown: (view, event) => {
           if (
             isMacPlatform(navigator.platform) &&
@@ -967,10 +979,16 @@ function ComposerPromptEditorTiptapInner(props: ComposerPromptEditorProps) {
           }
           return handled;
         },
-        handleTextInput: (view, from, to, text) => {
+        handleTextInput: (view, from, to, input) => {
+          const text = deadKeyInput.current.textInput(input, performance.now());
+          const insertNormalizedText = () => {
+            if (text === input) return false;
+            view.dispatch(view.state.tr.insertText(text, from, to));
+            return true;
+          };
           if (text.length !== 1) return false;
           const closer = SURROUND_CLOSE[text];
-          if (!closer || from === to) return false;
+          if (!closer || from === to) return insertNormalizedText();
           // Never wrap chips or other atoms, and never wrap styled text: the
           // default replace keeps marks intact, wrapping would drop them.
           let touchesSpecial = false;
@@ -984,17 +1002,19 @@ function ComposerPromptEditorTiptapInner(props: ComposerPromptEditorProps) {
             }
             return true;
           });
-          if (touchesSpecial) return false;
+          if (touchesSpecial) return insertNormalizedText();
           const map = serializeEditorDoc(view.state.doc);
           const startMd = flatToMarkdown(map, pmToFlat(map, from));
           const endMd = flatToMarkdown(map, pmToFlat(map, to));
-          if (selectionTouchesMentionBoundary(map.value, startMd, endMd)) return false;
+          if (selectionTouchesMentionBoundary(map.value, startMd, endMd))
+            return insertNormalizedText();
           const tr = view.state.tr.insertText(closer, to).insertText(text, from);
           tr.setSelection(TextSelection.create(tr.doc, from + text.length, to + text.length));
           view.dispatch(tr);
           return true;
         },
         handlePaste: (view, event) => {
+          deadKeyInput.current.reset();
           const clipboardData = event.clipboardData;
           if (!clipboardData || clipboardData.files.length > 0) return false;
           const pastedText = clipboardData.getData("text/plain");
