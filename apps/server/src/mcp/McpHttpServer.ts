@@ -41,6 +41,8 @@ import {
   DeviceScreenshotToolkit,
   DeviceStandardToolkit,
 } from "./toolkits/device/tools.ts";
+import { SchedulingToolkit } from "./toolkits/scheduling/tools.ts";
+import { SchedulingToolkitHandlersLive } from "./toolkits/scheduling/handlers.ts";
 
 const unauthorized = HttpServerResponse.jsonUnsafe(
   {
@@ -670,5 +672,6 @@ const McpTransportLive = McpServer.layerHttp({
 export const layer = Layer.mergeAll(
   PreviewToolkitRegistrationLive,
   PullRequestsToolkitRegistrationLive,
+  McpServer.toolkit(SchedulingToolkit).pipe(Layer.provide(SchedulingToolkitHandlersLive)),
   DeviceToolkitRegistrationLive,
 ).pipe(Layer.provideMerge(McpTransportLive));

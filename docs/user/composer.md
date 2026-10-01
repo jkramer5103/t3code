@@ -238,3 +238,20 @@ automatically. HTML previews cannot access your T3 Code session.
 
 On mobile, select a PDF attachment or link to open it. iOS uses the native viewer;
 Android opens a compatible installed file viewer.
+
+## Schedule a follow-up
+
+Ask the agent to revisit work later: “Check this in two hours,” “Check every
+three hours,” or “Review this every weekday at 9 AM Europe/Berlin.” The agent
+creates a schedule and confirms its next run time. Each run sends the saved
+prompt into the same thread and starts a turn with that thread's current model
+and permission mode.
+
+Ask the agent to list, pause, resume, or cancel schedules in the thread. To change
+the timing or task, ask it to replace the schedule.
+
+The environment hosting the thread must be running. You can close the client;
+schedules survive server restarts. After downtime, missed occurrences run once
+rather than all at once. A busy thread waits until its turn and pending requests
+finish. Archiving or deleting a thread pauses its schedules; after reopening an
+archived thread, ask the agent to resume them.

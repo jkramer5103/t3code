@@ -135,3 +135,50 @@ it.layer(NodeServices.layer)("thread.message.user.append", (it) => {
     }),
   );
 });
+
+it.effect("scheduled turn starts cannot steer running or queued work", () =>
+  Effect.gen(function* () {
+    const readModel = yield* readModelWithThread;
+    const target = readModel.threads[0]!;
+    const starting = {
+      ...target,
+      session: {
+        threadId,
+        status: "starting" as const,
+        providerName: "codex",
+        runtimeMode: "full-access" as const,
+        activeTurnId: null,
+        lastError: null,
+        updatedAt: createdAt,
+      },
+    };
+    const archived = { ...target, archivedAt: createdAt };
+    for (const blocked of [starting, archived]) {
+      const error = yield* decideOrchestrationCommand({
+        readModel: { ...readModel, threads: [blocked] },
+        command: { ...turnStartCommand, requireIdleAt: createdAt },
+      }).pipe(Effect.flip);
+      expect(error).toMatchObject({ _tag: "OrchestrationCommandInvariantError" });
+    }
+    const queuedEvents = yield* decideOrchestrationCommand({ readModel, command: appendCommand });
+    let queuedModel = readModel;
+    for (const [index, event] of (Array.isArray(queuedEvents)
+      ? queuedEvents
+      : [queuedEvents]
+    ).entries()) {
+      queuedModel = yield* projectEvent(queuedModel, { ...event, sequence: index + 3 });
+    }
+    const error = yield* decideOrchestrationCommand({
+      readModel: queuedModel,
+      command: { ...turnStartCommand, requireIdleAt: createdAt },
+    }).pipe(Effect.flip);
+    expect(error).toMatchObject({ _tag: "OrchestrationCommandInvariantError" });
+    const accepted = yield* decideOrchestrationCommand({
+      readModel,
+      command: { ...turnStartCommand, requireIdleAt: createdAt },
+    });
+    expect((Array.isArray(accepted) ? accepted : [accepted]).map((event) => event.type)).toContain(
+      "thread.turn-start-requested",
+    );
+  }).pipe(Effect.provide(NodeServices.layer)),
+);

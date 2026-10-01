@@ -72,6 +72,8 @@ import * as ForgejoCli from "./sourceControl/ForgejoCli.ts";
 import * as TextGeneration from "./textGeneration/TextGeneration.ts";
 import { ProviderInstanceRegistryHydrationLive } from "./provider/Layers/ProviderInstanceRegistryHydration.ts";
 import * as TerminalManager from "./terminal/Manager.ts";
+import * as ScheduledPrompts from "./scheduling/ScheduledPrompts.ts";
+import * as ScheduledPromptWorker from "./scheduling/ScheduledPromptWorker.ts";
 import * as McpHttpServer from "./mcp/McpHttpServer.ts";
 import * as McpSessionRegistry from "./mcp/McpSessionRegistry.ts";
 import * as PreviewAutomationBroker from "./mcp/PreviewAutomationBroker.ts";
@@ -615,6 +617,7 @@ export const makeRoutesLayer = Layer.mergeAll(
   // Last, so no route layer can replace the server's one TracerDisabledWhen.
   untracedRequestsLayer,
 ).pipe(
+  Layer.provide(ScheduledPrompts.layer),
   // Both transports consume the same service instance, so caches single-flight across clients
   // and mutations observed on WebSocket invalidate patches subsequently read over HTTP.
   Layer.provide(PullRequestServiceLive),
@@ -972,9 +975,11 @@ const makeServerLayer = Layer.unwrap(
       tailscaleServeLayer,
       cloudDesiredLinkReconcileLayer,
       HeapSnapshot.layer,
+      ScheduledPromptWorker.layer,
     );
 
     return serverApplicationLayer.pipe(
+      Layer.provideMerge(ScheduledPrompts.layer),
       Layer.provideMerge(runtimeServicesLive),
       Layer.provide(activationLayer),
       Layer.provideMerge(serverRelayBrokerTracingLayer),

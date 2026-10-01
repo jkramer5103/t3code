@@ -1399,6 +1399,21 @@ export const decideOrchestrationCommand = Effect.fn("decideOrchestrationCommand"
         command,
         threadId: command.threadId,
       });
+      if (
+        command.requireIdleAt !== undefined &&
+        (targetThread.archivedAt !== null ||
+          targetThread.latestTurn?.state === "running" ||
+          targetThread.session?.status === "starting" ||
+          (targetThread.session?.activeTurnId !== null &&
+            targetThread.session?.activeTurnId !== undefined) ||
+          openRequests(targetThread).size > 0 ||
+          hasQueuedTurnStartForThread(targetThread, command.requireIdleAt))
+      ) {
+        return yield* new OrchestrationCommandInvariantError({
+          commandType: command.type,
+          detail: "Scheduled prompts require an idle, unarchived thread.",
+        });
+      }
       const sourceProposedPlan = command.sourceProposedPlan;
       const sourceThread = sourceProposedPlan
         ? yield* requireThread({

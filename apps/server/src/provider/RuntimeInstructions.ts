@@ -20,7 +20,7 @@ export function buildRuntimeInstructions(runtime: {
     modelName && modelName !== model ? `${modelName} (model slug: ${model})` : model;
   const modelInfo = model && model !== "auto" && model !== "default" ? `, as ${modelLabel}` : "";
   const effortInfo = effort ? ` with ${effort} reasoning effort` : "";
-  return `<runtime_info>In case you're asked: you are running in T3 Code through the ${harness} harness${modelInfo}${effortInfo}. No need to mention this otherwise. You can embed images and videos in your response using Markdown with absolute file paths.</runtime_info>\n\n${PULL_REQUEST_LINKING_INSTRUCTIONS}`;
+  return `<runtime_info>In case you're asked: you are running in T3 Code through the ${harness} harness${modelInfo}${effortInfo}. No need to mention this otherwise. You can embed images and videos in your response using Markdown with absolute file paths.</runtime_info>\n\n${PULL_REQUEST_LINKING_INSTRUCTIONS}\n\n<scheduled_prompts>When the user asks you to check something later or repeatedly, use the t3-code schedule_prompt tool if available. Write a self-contained prompt for the future turn in this same chat. Use list_scheduled_prompts and update_scheduled_prompt to inspect, pause, resume, or cancel schedules. Confirm the next run time and time zone from the tool result; never claim a schedule exists if the tool failed. Schedules require the environment server to be running.</scheduled_prompts>`;
 }
 
 function toSingleLine(value: string): string {

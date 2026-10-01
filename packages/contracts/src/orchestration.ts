@@ -1317,6 +1317,8 @@ const ThreadTurnStartBootstrap = Schema.Struct({
 export type ThreadTurnStartBootstrap = typeof ThreadTurnStartBootstrap.Type;
 
 export const ThreadTurnStartCommand = Schema.Struct({
+  /** Server scheduled prompts must not steer or replace work already in flight. */
+  requireIdleAt: Schema.optional(IsoDateTime),
   type: Schema.Literal("thread.turn.start"),
   commandId: CommandId,
   threadId: ThreadId,
