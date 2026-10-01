@@ -80,8 +80,14 @@ export function PullRequestThreadDialog({
     };
   }, [open]);
 
-  const parsedReference = parsePullRequestReference(reference);
-  const parsedDebouncedReference = parsePullRequestReference(debouncedReference);
+  const parsedReference = parsePullRequestReference(
+    reference,
+    gitStatus?.sourceControlProvider?.kind,
+  );
+  const parsedDebouncedReference = parsePullRequestReference(
+    debouncedReference,
+    gitStatus?.sourceControlProvider?.kind,
+  );
   const sourceControlScope = useMemo(
     () => ({
       environmentId,

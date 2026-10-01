@@ -151,7 +151,13 @@ export function loadingPullRequestCheckoutCommand(
   const provider =
     identity?.provider ??
     (host === "github.com" ? "github" : host === "gitlab.com" ? "gitlab" : null);
-  if (provider !== "github" && provider !== "gitlab" && provider !== "azure-devops") return null;
+  if (
+    provider !== "github" &&
+    provider !== "gitlab" &&
+    provider !== "azure-devops" &&
+    provider !== "phabricator"
+  )
+    return null;
   if (identity?.provider !== undefined && host && pullRequestHostOf(identity, provider) !== host) {
     return null;
   }

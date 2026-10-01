@@ -245,6 +245,9 @@ it("recognizes Phabricator and Phorge remotes and presents Differential revision
     "git@phabricator.example:diffusion/REPO/repo.git",
     "https://reviews.example/diffusion/REPO/repo.git",
     "https://phorge.example/source/repo.git",
+    "ssh://git@reviews.example:2222/diffusion/REPO/repo.git",
+    "git@reviews.example:diffusion/REPO/repo.git",
+    "git://reviews.example/diffusion/REPO/repo.git",
   ]) {
     expect(detectSourceControlProviderFromRemoteUrl(remote)?.kind).toBe("phabricator");
   }

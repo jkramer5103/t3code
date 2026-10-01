@@ -319,7 +319,6 @@ const RepositoryIdentityResolverLayerLive = Layer.effect(
       refine: Effect.fn(function* (identity: RepositoryIdentity) {
         const remote = ForgejoCli.parseForgejoRemote(identity.locator.remoteUrl);
         if (
-          !remote ||
           !identity.rootPath ||
           (identity.provider !== undefined &&
             identity.provider !== "unknown" &&
@@ -338,7 +337,7 @@ const RepositoryIdentityResolverLayerLive = Layer.effect(
         if (handle.context?.provider.kind === "phabricator") {
           return { ...identity, provider: "phabricator", webUrl: handle.context.provider.baseUrl };
         }
-        if (handle.context?.provider.kind !== "forgejo") return identity;
+        if (!remote || handle.context?.provider.kind !== "forgejo") return identity;
         const baseUrl = handle.context.provider.baseUrl.replace(/\/+$/, "");
         const basePath = new URL(baseUrl).pathname.replace(/^\/+|\/+$/g, "");
         const path =

@@ -246,7 +246,9 @@ export function detectSourceControlProviderFromRemoteUrl(
   if (
     hasDnsLabel(hostname, "phabricator") ||
     hasDnsLabel(hostname, "phorge") ||
-    /^https?:\/\/[^/]+\/(?:diffusion|source)\//iu.test(remoteUrl.trim())
+    /^(?:(?:https?|ssh|git):\/\/[^/]+\/|[^@/\s:]+@[^/\s:]+:)(?:diffusion|source)\//iu.test(
+      remoteUrl.trim(),
+    )
   ) {
     return { kind: "phabricator", name: "Phabricator", baseUrl: toBaseUrl(host) };
   }

@@ -122,3 +122,21 @@ it.effect("returns live revision status through source control and checks out wi
     ).toMatchObject({ operation: "getChangeRequest" });
   }),
 );
+
+it.effect("refines git protocol remotes from arc configuration", () =>
+  Effect.gen(function* () {
+    const discovery = yield* makeDiscovery.pipe(
+      Effect.provide(dependencies('{"phabricator.uri":"https://reviews.example/"}')),
+    );
+    expect(
+      yield* discovery.refineUnknownRemote({
+        cwd: "/repo",
+        context: { ...context, remoteUrl: "git://reviews.example/repo.git" },
+      }),
+    ).toEqual({
+      kind: "phabricator",
+      name: "Phabricator",
+      baseUrl: "https://reviews.example",
+    });
+  }),
+);

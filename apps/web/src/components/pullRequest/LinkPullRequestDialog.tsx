@@ -82,6 +82,7 @@ export function resolveLinkPullRequestInput(input: {
   readonly reference: string;
   readonly project: {
     readonly host: string;
+    readonly provider?: SourceControlProviderKind;
     readonly repository: string;
     readonly webUrl: (number: number) => string | null;
   } | null;
@@ -90,7 +91,7 @@ export function resolveLinkPullRequestInput(input: {
   const parsed =
     parseChangeRequestUrl(input.reference.trim()) !== null
       ? input.reference.trim()
-      : parsePullRequestReference(input.reference);
+      : parsePullRequestReference(input.reference, input.project?.provider);
   if (parsed === null) return null;
   const url = parseChangeRequestUrl(parsed);
   if (url !== null) {
@@ -145,6 +146,7 @@ function LinkPullRequestDialog({
     const host = pullRequestHostOf(identity, kind);
     return {
       host,
+      provider: kind,
       repository,
       webUrl: (number: number) =>
         kind === "phabricator" && identity.webUrl
