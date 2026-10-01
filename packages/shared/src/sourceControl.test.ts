@@ -262,3 +262,13 @@ it("recognizes Phabricator and Phorge remotes and presents Differential revision
     singular: "revision",
   });
 });
+
+it.each([
+  ["https://github.com/source/repo.git", "github"],
+  ["git@github.com:diffusion/repo.git", "github"],
+  ["ssh://git@gitlab.com/source/repo.git", "gitlab"],
+  ["https://bitbucket.org/source/repo.git", "bitbucket"],
+  ["https://dev.azure.com/source/project/_git/repo", "azure-devops"],
+] as const)("prefers the known host over a Differential-shaped path in %s", (remote, kind) => {
+  expect(detectSourceControlProviderFromRemoteUrl(remote)?.kind).toBe(kind);
+});

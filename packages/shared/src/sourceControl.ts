@@ -243,13 +243,7 @@ export function detectSourceControlProviderFromRemoteUrl(
     };
   }
 
-  if (
-    hasDnsLabel(hostname, "phabricator") ||
-    hasDnsLabel(hostname, "phorge") ||
-    /^(?:(?:https?|ssh|git):\/\/[^/]+\/|[^@/\s:]+@[^/\s:]+:)(?:diffusion|source)\//iu.test(
-      remoteUrl.trim(),
-    )
-  ) {
+  if (hasDnsLabel(hostname, "phabricator") || hasDnsLabel(hostname, "phorge")) {
     return { kind: "phabricator", name: "Phabricator", baseUrl: toBaseUrl(host) };
   }
 
@@ -283,6 +277,14 @@ export function detectSourceControlProviderFromRemoteUrl(
       name: hostname === "bitbucket.org" ? "Bitbucket" : "Bitbucket Self-Hosted",
       baseUrl: toBaseUrl(host),
     };
+  }
+
+  if (
+    /^(?:(?:https?|ssh|git):\/\/[^/]+\/|[^@/\s:]+@[^/\s:]+:)(?:diffusion|source)\//iu.test(
+      remoteUrl.trim(),
+    )
+  ) {
+    return { kind: "phabricator", name: "Phabricator", baseUrl: toBaseUrl(host) };
   }
 
   return {
