@@ -136,8 +136,10 @@ function LinkPullRequestDialog({
     const identity = project?.repositoryIdentity;
     if (!project || !identity) return null;
     const repository =
-      identity.displayName ??
-      (identity.owner && identity.name ? `${identity.owner}/${identity.name}` : null);
+      identity.provider === "phabricator"
+        ? "differential"
+        : (identity.displayName ??
+          (identity.owner && identity.name ? `${identity.owner}/${identity.name}` : null));
     if (repository === null) return null;
     const kind = identity.provider as SourceControlProviderKind;
     const host = pullRequestHostOf(identity, kind);
@@ -145,9 +147,11 @@ function LinkPullRequestDialog({
       host,
       repository,
       webUrl: (number: number) =>
-        kind === "forgejo" && identity.webUrl
-          ? `${identity.webUrl.replace(/\/+$/, "")}/pulls/${number}`
-          : changeRequestWebUrl(kind, host, repository, number, identity.locator.remoteUrl),
+        kind === "phabricator" && identity.webUrl
+          ? `${identity.webUrl.replace(/\/+$/, "")}/D${number}`
+          : kind === "forgejo" && identity.webUrl
+            ? `${identity.webUrl.replace(/\/+$/, "")}/pulls/${number}`
+            : changeRequestWebUrl(kind, host, repository, number, identity.locator.remoteUrl),
     };
   }, [environmentProjects, projectId]);
   const linking = usePullRequestLinking(threadRef.environmentId);

@@ -71,3 +71,11 @@ describe("parsePullRequestReference", () => {
     expect(parsePullRequestReference("feature/my-branch")).toBeNull();
   });
 });
+
+it("accepts Differential revision numbers, URLs, and arc patch commands", () => {
+  expect(parsePullRequestReference("D42")).toBe("42");
+  expect(parsePullRequestReference("arc patch D42")).toBe("42");
+  expect(parsePullRequestReference("https://reviews.example/D42?diff=7")).toBe(
+    "https://reviews.example/D42?diff=7",
+  );
+});

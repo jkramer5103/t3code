@@ -98,6 +98,17 @@ export function resolveChangeRequestPresentation(
       return GITHUB_CHANGE_REQUEST_PRESENTATION;
     case "gitlab":
       return GITLAB_CHANGE_REQUEST_PRESENTATION;
+    case "phabricator":
+      return {
+        icon: "change-request",
+        providerName: "Phabricator",
+        shortName: "D",
+        longName: "revision",
+        pluralLongName: "revisions",
+        providerLongName: "Differential revision",
+        checkoutCommandExample: "arc patch D123",
+        urlExample: "https://phabricator.example.com/D42",
+      };
     case "forgejo":
       return FORGEJO_CHANGE_REQUEST_PRESENTATION;
     case "azure-devops":
@@ -232,6 +243,14 @@ export function detectSourceControlProviderFromRemoteUrl(
     };
   }
 
+  if (
+    hasDnsLabel(hostname, "phabricator") ||
+    hasDnsLabel(hostname, "phorge") ||
+    /^https?:\/\/[^/]+\/(?:diffusion|source)\//iu.test(remoteUrl.trim())
+  ) {
+    return { kind: "phabricator", name: "Phabricator", baseUrl: toBaseUrl(host) };
+  }
+
   if (isGitHubHost(hostname)) {
     return {
       kind: "github",
@@ -291,6 +310,8 @@ export function sourceControlRepositorySelector(
     | undefined,
 ): string | null {
   if (!identity) return null;
+  // Differential revision IDs belong to the entire host, including revisions without a repository.
+  if (identity.provider === "phabricator") return "differential";
   if (identity.provider === "azure-devops") {
     const segments = (identity.displayName ?? "").split("/").filter((part) => part !== "_git");
     return identity.name || segments.at(-1) || null;

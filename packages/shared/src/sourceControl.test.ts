@@ -239,3 +239,23 @@ it("names nothing for a project with no remote to name it by", () => {
   expect(sourceControlRepositorySelector(null)).toBeNull();
   expect(sourceControlRepositorySelector({ provider: "github" })).toBeNull();
 });
+
+it("recognizes Phabricator and Phorge remotes and presents Differential revisions", () => {
+  for (const remote of [
+    "git@phabricator.example:diffusion/REPO/repo.git",
+    "https://reviews.example/diffusion/REPO/repo.git",
+    "https://phorge.example/source/repo.git",
+  ]) {
+    expect(detectSourceControlProviderFromRemoteUrl(remote)?.kind).toBe("phabricator");
+  }
+  expect(
+    sourceControlRepositorySelector({
+      provider: "phabricator",
+      displayName: "diffusion/REPO/repo",
+    }),
+  ).toBe("differential");
+  expect(getChangeRequestTerminologyForKind("phabricator")).toEqual({
+    shortLabel: "D",
+    singular: "revision",
+  });
+});

@@ -135,6 +135,8 @@ export function pullRequestCheckoutCommand(
       }
       return `git clone --single-branch --branch ${headBranch} https://bitbucket.org/${headRepositoryNameWithOwner}.git t3code-pr-${number}`;
     }
+    case "phabricator":
+      return `arc patch D${number}`;
     case "unknown":
       return null;
   }
