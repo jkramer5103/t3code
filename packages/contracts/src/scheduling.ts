@@ -1,7 +1,21 @@
 import * as Schema from "effect/Schema";
 import { IsoDateTime, TrimmedNonEmptyString } from "./baseSchemas.ts";
 
-const Timestamp = IsoDateTime.check(Schema.isPattern(/T.*(?:Z|[+-]\d{2}:\d{2})$/));
+const timestampPattern =
+  /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/;
+const Timestamp = IsoDateTime.check(
+  Schema.makeFilter((value) => {
+    const parts = timestampPattern.exec(value);
+    if (parts === null)
+      return "Use a valid calendar timestamp with seconds and an explicit UTC offset.";
+    const year = Number(parts[1]);
+    const month = Number(parts[2]);
+    const day = Number(parts[3]);
+    const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+    const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    return day <= daysInMonth[month - 1]! || "The timestamp contains an impossible calendar date.";
+  }),
+);
 
 const Seconds = Schema.Int.check(Schema.isBetween({ minimum: 60, maximum: 31_536_000 }));
 

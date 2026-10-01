@@ -1404,6 +1404,7 @@ export const decideOrchestrationCommand = Effect.fn("decideOrchestrationCommand"
         (targetThread.archivedAt !== null ||
           targetThread.latestTurn?.state === "running" ||
           targetThread.session?.status === "starting" ||
+          targetThread.session?.status === "running" ||
           (targetThread.session?.activeTurnId !== null &&
             targetThread.session?.activeTurnId !== undefined) ||
           openRequests(targetThread).size > 0 ||

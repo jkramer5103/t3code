@@ -152,8 +152,12 @@ it.effect("scheduled turn starts cannot steer running or queued work", () =>
         updatedAt: createdAt,
       },
     };
+    const runningWithoutTurn = {
+      ...starting,
+      session: { ...starting.session, status: "running" as const },
+    };
     const archived = { ...target, archivedAt: createdAt };
-    for (const blocked of [starting, archived]) {
+    for (const blocked of [starting, runningWithoutTurn, archived]) {
       const error = yield* decideOrchestrationCommand({
         readModel: { ...readModel, threads: [blocked] },
         command: { ...turnStartCommand, requireIdleAt: createdAt },

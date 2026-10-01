@@ -29,7 +29,7 @@ export const SchedulingToolkit = Toolkit.make(
     .annotate(Tool.Idempotent, false),
   Tool.make("list_scheduled_prompts", {
     description:
-      "List the latest 100 schedules in this chat, including their IDs, next run, status, last run, and any delivery error. Use to inspect scheduled work before changing it.",
+      "List all active and paused schedules in this chat, plus the latest 100 completed or cancelled schedules, including their IDs, next run, status, last run, and any delivery error. Use to inspect scheduled work before changing it.",
     success: Schema.Struct({ schedules: Schema.Array(ScheduledPrompt) }),
     failure,
     dependencies,

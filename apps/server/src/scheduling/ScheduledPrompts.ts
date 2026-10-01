@@ -133,7 +133,12 @@ export const make = Effect.gen(function* () {
 
   const list = (threadId: ThreadId) =>
     locked(
-      sql<Row>`SELECT * FROM scheduled_prompts WHERE thread_id = ${threadId} ORDER BY created_at DESC LIMIT 100`.pipe(
+      sql<Row>`WITH terminal AS (
+        SELECT * FROM scheduled_prompts WHERE thread_id = ${threadId} AND status IN ('completed', 'cancelled')
+        ORDER BY created_at DESC LIMIT 100
+      )
+      SELECT * FROM scheduled_prompts WHERE thread_id = ${threadId} AND status IN ('active', 'paused')
+      UNION ALL SELECT * FROM terminal ORDER BY created_at DESC`.pipe(
         Effect.map((rows) => rows.map(fromRow)),
       ),
     );
@@ -178,6 +183,7 @@ export const make = Effect.gen(function* () {
             dispatchedThreads.has(row.thread_id) ||
             value.latestTurn?.state === "running" ||
             value.session?.status === "starting" ||
+            value.session?.status === "running" ||
             value.session?.activeTurnId ||
             value.hasPendingApprovals ||
             value.hasPendingUserInput ||

@@ -328,3 +328,31 @@ it.effect("agents can create, inspect, and cancel a schedule through MCP", () =>
     expect(commands).toHaveLength(0);
   }).pipe(provide),
 );
+
+it.effect("lists older live schedules even after more than 100 terminal schedules", () =>
+  Effect.gen(function* () {
+    const { schedules } = yield* harness;
+    const active = yield* schedules.create(threadId, {
+      prompt: "Keep checking",
+      schedule: { kind: "interval", seconds: 60 },
+    });
+    const paused = yield* schedules.create(threadId, {
+      prompt: "Paused check",
+      schedule: { kind: "interval", seconds: 60 },
+    });
+    yield* schedules.update(threadId, paused.id, "pause");
+    yield* TestClock.adjust("1 second");
+    for (let index = 0; index < 105; index++) {
+      const terminal = yield* schedules.create(threadId, {
+        prompt: "Cancelled check",
+        schedule: { kind: "delay", seconds: 60 },
+      });
+      yield* schedules.update(threadId, terminal.id, "cancel");
+    }
+    const listed = yield* schedules.list(threadId);
+    expect(listed).toHaveLength(102);
+    expect(listed).toContainEqual(expect.objectContaining({ id: active.id, status: "active" }));
+    expect(listed).toContainEqual(expect.objectContaining({ id: paused.id, status: "paused" }));
+    expect(listed.filter((schedule) => schedule.status === "cancelled")).toHaveLength(100);
+  }).pipe(provide),
+);
