@@ -58,6 +58,7 @@ Listings cover the review host, since Differential IDs are shared across reposit
 `https://your-server/D123` URL to a thread to keep its status updated; the link dialog also accepts
 `D123` for a Phabricator project. Use Arcanist or the host’s website to create revisions and
 participate in reviews. T3 Code’s integration is read-only; checkout applies a revision with `arc patch`.
+Choose **Local** when checking out a revision. Differential worktree checkout is not supported.
 
 ### Bitbucket
 
