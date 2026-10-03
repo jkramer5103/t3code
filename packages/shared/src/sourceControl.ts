@@ -5,7 +5,14 @@ import type {
 } from "@t3tools/contracts";
 
 export interface ChangeRequestPresentation {
-  readonly icon: "github" | "gitlab" | "forgejo" | "azure-devops" | "bitbucket" | "change-request";
+  readonly icon:
+    | "github"
+    | "gitlab"
+    | "forgejo"
+    | "azure-devops"
+    | "bitbucket"
+    | "phabricator"
+    | "change-request";
   readonly providerName: string;
   readonly shortName: string;
   readonly longName: string;
@@ -100,7 +107,7 @@ export function resolveChangeRequestPresentation(
       return GITLAB_CHANGE_REQUEST_PRESENTATION;
     case "phabricator":
       return {
-        icon: "change-request",
+        icon: "phabricator",
         providerName: "Phabricator",
         shortName: "D",
         longName: "revision",
