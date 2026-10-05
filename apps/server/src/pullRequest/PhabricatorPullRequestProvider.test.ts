@@ -35,13 +35,17 @@ const users = page([
   { phid: "PHID-USER-author", fields: { username: "alice", realName: "Alice" } },
   { phid: "PHID-USER-reviewer", fields: { username: "bob", realName: "Bob" } },
 ]);
-const provider = (respond: (input: VcsProcessInput) => unknown, truncated = false) =>
+const provider = (
+  respond: (input: VcsProcessInput) => unknown,
+  truncated = false,
+  origin = "https://reviews.example/",
+) =>
   make.pipe(
     Effect.provide(
       Layer.mergeAll(
         Path.layer,
         FileSystem.layerNoop({
-          readFileString: () => Effect.succeed('{"phabricator.uri":"https://reviews.example/"}'),
+          readFileString: () => Effect.succeed(JSON.stringify({ "phabricator.uri": origin })),
         }),
         Layer.mock(VcsProcess)({
           run: (input) =>
@@ -56,6 +60,19 @@ const provider = (respond: (input: VcsProcessInput) => unknown, truncated = fals
       ),
     ),
   );
+
+it.effect("rejects HTTP Conduit endpoints before starting Arcanist", () =>
+  Effect.gen(function* () {
+    const requests: VcsProcessInput[] = [];
+    const api = yield* provider((input) => requests.push(input), false, "http://reviews.example/");
+    const result = yield* api.getViewer(reference).pipe(Effect.result);
+    expect(result).toMatchObject({
+      _tag: "Failure",
+      failure: { detail: expect.stringContaining("HTTPS") },
+    });
+    expect(requests).toEqual([]);
+  }),
+);
 
 it.effect.each([
   ["needs-review", "open"],

@@ -49,7 +49,8 @@ glab auth login
 
 Install [Arcanist](https://secure.phabricator.com/book/phabricator/article/arcanist/) on the
 T3 Code server and authenticate with `arc install-certificate`. Set `phabricator.uri` in your
-project’s `.arcconfig` to the review server’s URL. The Git remote and review server must share
+project’s `.arcconfig` to the review server’s HTTPS URL. Authenticated Conduit requests require
+HTTPS. The Git remote and review server must share
 a hostname. Phabricator and Phorge hostnames, and `/diffusion/` or `/source/` clone URLs, are
 recognized automatically; other hostnames use `.arcconfig` for detection.
 
