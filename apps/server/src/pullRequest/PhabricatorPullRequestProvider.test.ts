@@ -61,17 +61,19 @@ const provider = (
     ),
   );
 
-it.effect("rejects HTTP Conduit endpoints before starting Arcanist", () =>
-  Effect.gen(function* () {
-    const requests: VcsProcessInput[] = [];
-    const api = yield* provider((input) => requests.push(input), false, "http://reviews.example/");
-    const result = yield* api.getViewer(reference).pipe(Effect.result);
-    expect(result).toMatchObject({
-      _tag: "Failure",
-      failure: { detail: expect.stringContaining("HTTPS") },
-    });
-    expect(requests).toEqual([]);
-  }),
+it.effect.each(["http://reviews.example/", "http://other.example/"])(
+  "rejects HTTP Conduit configuration %s before starting Arcanist",
+  (origin) =>
+    Effect.gen(function* () {
+      const requests: VcsProcessInput[] = [];
+      const api = yield* provider((input) => requests.push(input), false, origin);
+      const result = yield* api.getViewer(reference).pipe(Effect.result);
+      expect(result).toMatchObject({
+        _tag: "Failure",
+        failure: { detail: expect.stringContaining("HTTPS") },
+      });
+      expect(requests).toEqual([]);
+    }),
 );
 
 it.effect.each([

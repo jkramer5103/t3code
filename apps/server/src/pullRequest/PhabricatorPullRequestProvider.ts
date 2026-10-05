@@ -109,7 +109,11 @@ export const make = Effect.gen(function* () {
         : input.host
           ? `https://${input.host}`
           : null;
-    if (origin === null || new URL(origin).protocol !== "https:") {
+    if (
+      origin === null ||
+      new URL(origin).protocol !== "https:" ||
+      (configured !== null && new URL(configured).protocol !== "https:")
+    ) {
       return yield* failure(
         method,
         "Configure an HTTPS Phabricator URL before using authenticated Conduit requests.",
